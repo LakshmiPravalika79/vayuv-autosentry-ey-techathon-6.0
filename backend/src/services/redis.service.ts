@@ -6,6 +6,7 @@ export class RedisService {
   private client: Redis | null = null;
   private subscriber: Redis | null = null;
   private publisher: Redis | null = null;
+  private isConnected: boolean = false;
 
   private constructor() {}
 
@@ -17,11 +18,17 @@ export class RedisService {
   }
 
   public async connect(): Promise<void> {
-    const redisUrl = process.env.REDIS_URL || 'redis://localhost:6379';
+    const redisUrl = process.env.REDIS_URL;
+
+    // Skip Redis connection if no URL provided
+    if (!redisUrl) {
+      logger.warn('No REDIS_URL provided, running without Redis cache');
+      return;
+    }
 
     try {
-      // Main client for general operations
-      this.client = new Redis(redisUrl, {
+      // Upstash and other cloud Redis use TLS (rediss://)
+      const redisOptions: any = {
         retryStrategy: (times: number) => {
           if (times > 3) {
             logger.error('Redis connection failed after 3 retries');
@@ -30,37 +37,37 @@ export class RedisService {
           return Math.min(times * 200, 2000);
         },
         maxRetriesPerRequest: 3,
-      });
+        lazyConnect: true,
+      };
+
+      // Handle TLS for Upstash (rediss:// URLs)
+      if (redisUrl.startsWith('rediss://')) {
+        redisOptions.tls = { rejectUnauthorized: false };
+      }
+
+      // Main client for general operations
+      this.client = new Redis(redisUrl, redisOptions);
 
       this.client.on('connect', () => {
+        this.isConnected = true;
         logger.info('Redis client connected');
       });
 
       this.client.on('error', (err) => {
-        logger.error('Redis client error:', err);
+        this.isConnected = false;
+        logger.error('Redis client error:', err.message);
       });
 
-      // Subscriber client for pub/sub
-      this.subscriber = new Redis(redisUrl);
-      this.subscriber.on('error', (err) => {
-        logger.error('Redis subscriber error:', err);
-      });
-
-      // Publisher client for pub/sub
-      this.publisher = new Redis(redisUrl);
-      this.publisher.on('error', (err) => {
-        logger.error('Redis publisher error:', err);
-      });
-
-      // Wait for connection
+      // Try to connect
+      await this.client.connect();
       await this.client.ping();
+      this.isConnected = true;
       logger.info('Redis connection verified');
-    } catch (error) {
-      logger.error('Failed to connect to Redis:', error);
-      // Don't throw - allow app to run without Redis in development
-      if (process.env.NODE_ENV === 'production') {
-        throw error;
-      }
+    } catch (error: any) {
+      logger.warn('Redis connection failed, running without cache:', error.message);
+      this.client = null;
+      this.isConnected = false;
+      // Don't throw - allow app to run without Redis
     }
   }
 
@@ -68,18 +75,30 @@ export class RedisService {
     return this.client;
   }
 
+  public isReady(): boolean {
+    return this.isConnected && this.client !== null;
+  }
+
   // Cache operations
   public async get(key: string): Promise<string | null> {
     if (!this.client) return null;
-    return this.client.get(key);
+    try {
+      return await this.client.get(key);
+    } catch {
+      return null;
+    }
   }
 
   public async set(key: string, value: string, ttlSeconds?: number): Promise<void> {
     if (!this.client) return;
-    if (ttlSeconds) {
-      await this.client.setex(key, ttlSeconds, value);
-    } else {
-      await this.client.set(key, value);
+    try {
+      if (ttlSeconds) {
+        await this.client.setex(key, ttlSeconds, value);
+      } else {
+        await this.client.set(key, value);
+      }
+    } catch {
+      // Silently fail cache operations
     }
   }
 

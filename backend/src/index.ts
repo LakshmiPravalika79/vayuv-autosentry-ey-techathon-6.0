@@ -184,9 +184,13 @@ const server = createServer(app);
 
 async function startServer() {
   try {
-    // Initialize Redis connection
-    await RedisService.getInstance().connect();
-    logger.info('Redis connection established');
+    // Initialize Redis connection (non-blocking, app works without it)
+    try {
+      await RedisService.getInstance().connect();
+      logger.info('Redis connection established');
+    } catch (redisError) {
+      logger.warn('Redis not available, running without cache');
+    }
 
     // Start server
     server.listen(PORT, () => {
