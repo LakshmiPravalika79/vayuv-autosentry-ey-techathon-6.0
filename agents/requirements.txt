@@ -1,0 +1,17 @@
+httpx==0.25.2
+pydantic==2.5.2
+python-dotenv==1.0.0
+asyncio-redis==0.16.0
+redis==5.0.1
+
+# Optional: LangGraph support
+# langgraph>=0.0.20
+# langchain-core>=0.1.0
+# langchain-openai>=0.0.2
+
+# Optional: CrewAI support
+# crewai>=0.1.0
+# crewai-tools>=0.0.1
+
+# Optional: AutoGen support
+# pyautogen>=0.2.0

@@ -1,0 +1,72 @@
+[
+  {
+    "appointment_id": "APT001",
+    "vehicle_id": "VH002",
+    "customer_name": "Emily Johnson",
+    "service_center": "Pacific Auto - LA",
+    "scheduled_date": "2025-12-10",
+    "scheduled_time": "09:00",
+    "service_type": "Engine Diagnostics",
+    "estimated_duration_hours": 2,
+    "status": "Confirmed",
+    "created_by": "System - Predictive Alert",
+    "notes": "Check engine light investigation, potential coolant system issue",
+    "priority": "High"
+  },
+  {
+    "appointment_id": "APT002",
+    "vehicle_id": "VH004",
+    "customer_name": "Sarah Davis",
+    "service_center": "Texas Auto Center - Houston",
+    "scheduled_date": "2025-12-08",
+    "scheduled_time": "10:30",
+    "service_type": "Multiple Systems Service",
+    "estimated_duration_hours": 4,
+    "status": "Confirmed",
+    "created_by": "System - Predictive Alert",
+    "notes": "Battery replacement, transmission fluid service, brake inspection",
+    "priority": "Critical"
+  },
+  {
+    "appointment_id": "APT003",
+    "vehicle_id": "VH007",
+    "customer_name": "Robert Taylor",
+    "service_center": "Emerald City Auto - Seattle",
+    "scheduled_date": "2025-12-07",
+    "scheduled_time": "08:00",
+    "service_type": "Emergency Service",
+    "estimated_duration_hours": 6,
+    "status": "In Progress",
+    "created_by": "System - Critical Alert",
+    "notes": "Multiple critical issues: ABS, cooling, transmission, brakes",
+    "priority": "Emergency"
+  },
+  {
+    "appointment_id": "APT004",
+    "vehicle_id": "VH006",
+    "customer_name": "Jessica Martinez",
+    "service_center": "Mountain View Auto - Denver",
+    "scheduled_date": "2025-12-12",
+    "scheduled_time": "14:00",
+    "service_type": "Brake Inspection",
+    "estimated_duration_hours": 1.5,
+    "status": "Pending Confirmation",
+    "created_by": "System - Predictive Alert",
+    "notes": "Brake pad wear approaching service threshold",
+    "priority": "Medium"
+  },
+  {
+    "appointment_id": "APT005",
+    "vehicle_id": "VH009",
+    "customer_name": "Christopher Lee",
+    "service_center": "Sunshine Auto - Miami",
+    "scheduled_date": "2025-12-15",
+    "scheduled_time": "11:00",
+    "service_type": "Cooling System Service",
+    "estimated_duration_hours": 2,
+    "status": "Scheduled",
+    "created_by": "Customer Request",
+    "notes": "Coolant level check, engine temperature running slightly high",
+    "priority": "Medium"
+  }
+]

@@ -1,0 +1,518 @@
+// This is your Prisma schema file
+// Learn more: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// USER & AUTHENTICATION
+// ============================================
+
+model User {
+  id            String    @id @default(uuid())
+  email         String    @unique
+  password      String
+  firstName     String
+  lastName      String
+  phone         String?
+  role          UserRole  @default(CUSTOMER)
+  isActive      Boolean   @default(true)
+  emailVerified Boolean   @default(false)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Relations
+  vehicles      Vehicle[]
+  appointments  Appointment[]
+  feedback      Feedback[]
+  notifications Notification[]
+  sessions      Session[]
+
+  @@index([email])
+}
+
+model Session {
+  id           String   @id @default(uuid())
+  userId       String
+  token        String   @unique
+  refreshToken String   @unique
+  userAgent    String?
+  ipAddress    String?
+  expiresAt    DateTime
+  createdAt    DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([token])
+}
+
+enum UserRole {
+  CUSTOMER
+  TECHNICIAN
+  SERVICE_ADVISOR
+  MANAGER
+  ADMIN
+}
+
+// ============================================
+// VEHICLE & TELEMETRY
+// ============================================
+
+model Vehicle {
+  id              String   @id @default(uuid())
+  userId          String
+  vin             String   @unique
+  make            String
+  model           String
+  year            Int
+  licensePlate    String?
+  color           String?
+  mileage         Int      @default(0)
+  lastServiceDate DateTime?
+  purchaseDate    DateTime?
+  warrantyExpiry  DateTime?
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  user              User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  telemetry         TelemetryReading[]
+  predictions       Prediction[]
+  appointments      Appointment[]
+  maintenanceRecords MaintenanceRecord[]
+  alerts            Alert[]
+  rcaTickets        RCATicket[]
+
+  @@index([userId])
+  @@index([vin])
+}
+
+model TelemetryReading {
+  id                String   @id @default(uuid())
+  vehicleId         String
+  timestamp         DateTime @default(now())
+  
+  // Engine metrics
+  engineTemp        Float?
+  oilPressure       Float?
+  oilLevel          Float?
+  coolantTemp       Float?
+  coolantLevel      Float?
+  rpm               Int?
+  
+  // Battery & electrical
+  batteryVoltage    Float?
+  batteryHealth     Float?
+  alternatorOutput  Float?
+  
+  // Brake system
+  brakePadFront     Float?
+  brakePadRear      Float?
+  brakeFluidLevel   Float?
+  
+  // Tires
+  tirePressureFl    Float?
+  tirePressureFr    Float?
+  tirePressureRl    Float?
+  tirePressureRr    Float?
+  tireWearFl        Float?
+  tireWearFr        Float?
+  tireWearRl        Float?
+  tireWearRr        Float?
+  
+  // Transmission
+  transmissionTemp  Float?
+  transmissionFluid Float?
+  
+  // Fuel
+  fuelLevel         Float?
+  fuelEfficiency    Float?
+  
+  // Other
+  mileage           Int?
+  speed             Float?
+  location          Json?
+  dtcCodes          String[]
+  rawData           Json?
+
+  vehicle Vehicle @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+
+  @@index([vehicleId])
+  @@index([timestamp])
+}
+
+// ============================================
+// PREDICTIONS & ALERTS
+// ============================================
+
+model Prediction {
+  id              String           @id @default(uuid())
+  vehicleId       String
+  component       String
+  predictedIssue  String
+  confidence      Float
+  severity        PredictionSeverity
+  estimatedDays   Int
+  estimatedCost   Float?
+  recommendations String[]
+  mlModelVersion  String?
+  createdAt       DateTime         @default(now())
+  isAcknowledged  Boolean          @default(false)
+  acknowledgedAt  DateTime?
+
+  vehicle Vehicle @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  alerts  Alert[]
+
+  @@index([vehicleId])
+  @@index([createdAt])
+}
+
+model Alert {
+  id            String       @id @default(uuid())
+  vehicleId     String
+  predictionId  String?
+  type          AlertType
+  severity      AlertSeverity
+  title         String
+  message       String
+  isRead        Boolean      @default(false)
+  isDismissed   Boolean      @default(false)
+  createdAt     DateTime     @default(now())
+  readAt        DateTime?
+
+  vehicle    Vehicle     @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  prediction Prediction? @relation(fields: [predictionId], references: [id])
+
+  @@index([vehicleId])
+  @@index([createdAt])
+}
+
+enum PredictionSeverity {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum AlertType {
+  PREDICTION
+  MAINTENANCE_DUE
+  TELEMETRY_ANOMALY
+  UEBA_ALERT
+  APPOINTMENT_REMINDER
+  SERVICE_COMPLETE
+}
+
+enum AlertSeverity {
+  INFO
+  WARNING
+  ERROR
+  CRITICAL
+}
+
+// ============================================
+// APPOINTMENTS & SERVICE
+// ============================================
+
+model ServiceCenter {
+  id             String   @id @default(uuid())
+  name           String
+  address        String
+  city           String
+  state          String
+  zipCode        String
+  phone          String
+  email          String?
+  operatingHours Json
+  services       String[]
+  bayCount       Int      @default(4)
+  rating         Float    @default(4.5)
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  appointments Appointment[]
+  technicians  Technician[]
+}
+
+model Technician {
+  id             String   @id @default(uuid())
+  serviceCenterId String
+  name           String
+  specializations String[]
+  certifications String[]
+  isAvailable    Boolean  @default(true)
+  rating         Float    @default(4.5)
+  createdAt      DateTime @default(now())
+
+  serviceCenter ServiceCenter @relation(fields: [serviceCenterId], references: [id])
+  appointments  Appointment[]
+}
+
+model Appointment {
+  id              String            @id @default(uuid())
+  userId          String
+  vehicleId       String
+  serviceCenterId String
+  technicianId    String?
+  scheduledDate   DateTime
+  scheduledTime   String
+  duration        Int               @default(60)
+  services        String[]
+  serviceType     ServiceType
+  status          AppointmentStatus @default(PENDING)
+  priority        Int               @default(3)
+  estimatedCost   Float?
+  actualCost      Float?
+  notes           String?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  completedAt     DateTime?
+
+  user          User              @relation(fields: [userId], references: [id])
+  vehicle       Vehicle           @relation(fields: [vehicleId], references: [id])
+  serviceCenter ServiceCenter     @relation(fields: [serviceCenterId], references: [id])
+  technician    Technician?       @relation(fields: [technicianId], references: [id])
+  maintenance   MaintenanceRecord?
+
+  @@index([userId])
+  @@index([vehicleId])
+  @@index([scheduledDate])
+}
+
+model MaintenanceRecord {
+  id              String   @id @default(uuid())
+  vehicleId       String
+  appointmentId   String?  @unique
+  serviceType     String
+  description     String
+  partsReplaced   Json?
+  laborHours      Float?
+  totalCost       Float
+  mileageAtService Int
+  performedAt     DateTime @default(now())
+  performedBy     String?
+  notes           String?
+  nextServiceDue  DateTime?
+  nextServiceMileage Int?
+
+  vehicle     Vehicle      @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  appointment Appointment? @relation(fields: [appointmentId], references: [id])
+
+  @@index([vehicleId])
+}
+
+enum ServiceType {
+  EMERGENCY
+  DIAGNOSTIC
+  PREVENTIVE
+  REPAIR
+  RECALL
+  WARRANTY
+  INSPECTION
+}
+
+enum AppointmentStatus {
+  PENDING
+  CONFIRMED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+  RESCHEDULED
+}
+
+// ============================================
+// FEEDBACK & RCA
+// ============================================
+
+model Feedback {
+  id              String          @id @default(uuid())
+  userId          String
+  vehicleId       String?
+  appointmentId   String?
+  type            FeedbackType
+  rating          Int?
+  npsScore        Int?
+  comment         String?
+  sentiment       SentimentType?
+  categories      String[]
+  isProcessed     Boolean         @default(false)
+  followUpRequired Boolean        @default(false)
+  followUpCompleted Boolean       @default(false)
+  createdAt       DateTime        @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([createdAt])
+}
+
+model RCATicket {
+  id              String       @id @default(uuid())
+  vehicleId       String
+  title           String
+  description     String
+  category        IssueCategory
+  priority        RCAPriority
+  status          RCAStatus    @default(OPEN)
+  rootCauses      Json?
+  correctiveActions Json?
+  affectedVehicles String[]
+  assignee        String?
+  timeline        Json?
+  metrics         Json?
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+  closedAt        DateTime?
+
+  vehicle Vehicle @relation(fields: [vehicleId], references: [id])
+
+  @@index([vehicleId])
+  @@index([status])
+}
+
+enum FeedbackType {
+  SERVICE_RATING
+  NPS
+  SURVEY
+  COMPLAINT
+  SUGGESTION
+  COMPLIMENT
+}
+
+enum SentimentType {
+  VERY_POSITIVE
+  POSITIVE
+  NEUTRAL
+  NEGATIVE
+  VERY_NEGATIVE
+}
+
+enum IssueCategory {
+  MECHANICAL
+  ELECTRICAL
+  SOFTWARE
+  PROCESS
+  HUMAN_ERROR
+  SUPPLIER
+  DESIGN
+  ENVIRONMENTAL
+}
+
+enum RCAPriority {
+  CRITICAL
+  HIGH
+  MEDIUM
+  LOW
+}
+
+enum RCAStatus {
+  OPEN
+  IN_PROGRESS
+  ROOT_CAUSE_IDENTIFIED
+  CAPA_DEFINED
+  IMPLEMENTING
+  VERIFICATION
+  CLOSED
+  CANCELLED
+}
+
+// ============================================
+// NOTIFICATIONS
+// ============================================
+
+model Notification {
+  id          String             @id @default(uuid())
+  userId      String
+  type        NotificationType
+  channel     NotificationChannel
+  title       String
+  body        String
+  data        Json?
+  isRead      Boolean            @default(false)
+  isSent      Boolean            @default(false)
+  sentAt      DateTime?
+  readAt      DateTime?
+  scheduledFor DateTime?
+  createdAt   DateTime           @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([createdAt])
+}
+
+enum NotificationType {
+  ALERT
+  REMINDER
+  CONFIRMATION
+  PROMOTION
+  UPDATE
+  SURVEY
+}
+
+enum NotificationChannel {
+  EMAIL
+  SMS
+  PUSH
+  IN_APP
+}
+
+// ============================================
+// UEBA (Security)
+// ============================================
+
+model UEBAEvent {
+  id            String   @id @default(uuid())
+  userId        String?
+  sessionId     String?
+  eventType     String
+  action        String
+  resource      String?
+  ipAddress     String?
+  userAgent     String?
+  location      Json?
+  riskScore     Float    @default(0)
+  isAnomaly     Boolean  @default(false)
+  anomalyType   String?
+  metadata      Json?
+  timestamp     DateTime @default(now())
+
+  @@index([userId])
+  @@index([timestamp])
+  @@index([isAnomaly])
+}
+
+model UEBAAlert {
+  id            String      @id @default(uuid())
+  userId        String?
+  alertType     String
+  severity      UEBASeverity
+  title         String
+  description   String
+  relatedEvents String[]
+  isResolved    Boolean     @default(false)
+  resolvedAt    DateTime?
+  resolvedBy    String?
+  createdAt     DateTime    @default(now())
+
+  @@index([userId])
+  @@index([createdAt])
+  @@index([isResolved])
+}
+
+enum UEBASeverity {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}

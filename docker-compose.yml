@@ -1,0 +1,199 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: autosentry-postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-autosentry}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-autosentry_secret}
+      POSTGRES_DB: ${POSTGRES_DB:-autosentry}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-autosentry}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - autosentry-network
+
+  # Redis Cache & Message Queue
+  redis:
+    image: redis:7-alpine
+    container_name: autosentry-redis
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - autosentry-network
+
+  # Backend API Service
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: autosentry-backend
+    environment:
+      NODE_ENV: ${NODE_ENV:-production}
+      PORT: 3000
+      DATABASE_URL: postgresql://${POSTGRES_USER:-autosentry}:${POSTGRES_PASSWORD:-autosentry_secret}@postgres:5432/${POSTGRES_DB:-autosentry}
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: ${JWT_SECRET:-super_secret_jwt_key_change_in_production}
+      ML_SERVICE_URL: http://ml-service:8000
+      UEBA_SERVICE_URL: http://ueba-service:8001
+    ports:
+      - "3000:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - autosentry-network
+
+  # ML Prediction Service
+  ml-service:
+    build:
+      context: ./ml_service
+      dockerfile: Dockerfile
+    container_name: autosentry-ml
+    environment:
+      PYTHONUNBUFFERED: 1
+      MODEL_PATH: /app/models
+      REDIS_URL: redis://redis:6379
+    volumes:
+      - ml_models:/app/models
+      - ./data:/app/data:ro
+    ports:
+      - "8000:8000"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - autosentry-network
+
+  # UEBA Security Service
+  ueba-service:
+    build:
+      context: ./ueba
+      dockerfile: Dockerfile
+    container_name: autosentry-ueba
+    environment:
+      PYTHONUNBUFFERED: 1
+      REDIS_URL: redis://redis:6379
+      ALERT_THRESHOLD: ${UEBA_ALERT_THRESHOLD:-0.7}
+    ports:
+      - "8001:8001"
+    depends_on:
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - autosentry-network
+
+  # AI Agents Service
+  agents:
+    build:
+      context: ./agents
+      dockerfile: Dockerfile
+    container_name: autosentry-agents
+    environment:
+      PYTHONUNBUFFERED: 1
+      REDIS_URL: redis://redis:6379
+      BACKEND_URL: http://backend:3000
+      ML_SERVICE_URL: http://ml-service:8000
+      UEBA_SERVICE_URL: http://ueba-service:8001
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      AGENT_FRAMEWORK: ${AGENT_FRAMEWORK:-builtin}
+    volumes:
+      - ./data:/app/data:ro
+    depends_on:
+      - backend
+      - ml-service
+      - ueba-service
+      - redis
+    networks:
+      - autosentry-network
+
+  # Frontend Web Application
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: autosentry-frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - autosentry-network
+
+  # Prometheus Monitoring (Optional)
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: autosentry-prometheus
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+    ports:
+      - "9090:9090"
+    profiles:
+      - monitoring
+    networks:
+      - autosentry-network
+
+  # Grafana Dashboard (Optional)
+  grafana:
+    image: grafana/grafana:latest
+    container_name: autosentry-grafana
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:-admin}
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards:ro
+      - ./monitoring/grafana/datasources:/etc/grafana/provisioning/datasources:ro
+    ports:
+      - "3001:3000"
+    depends_on:
+      - prometheus
+    profiles:
+      - monitoring
+    networks:
+      - autosentry-network
+
+volumes:
+  postgres_data:
+  redis_data:
+  ml_models:
+  prometheus_data:
+  grafana_data:
+
+networks:
+  autosentry-network:
+    driver: bridge
