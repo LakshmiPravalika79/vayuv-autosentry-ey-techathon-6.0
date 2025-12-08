@@ -110,8 +110,13 @@ app.use(helmet({
 }));
 
 // CORS
+const corsOrigins = process.env.CORS_ORIGIN?.split(',') || [
+  'http://localhost:5173', 
+  'http://localhost:3000',
+  'https://vayuv-autosentry-ey-techathon-6-0-1.onrender.com'
+];
 app.use(cors({
-  origin: process.env.CORS_ORIGIN?.split(',') || ['http://localhost:5173', 'http://localhost:3000'],
+  origin: corsOrigins,
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Request-ID']
