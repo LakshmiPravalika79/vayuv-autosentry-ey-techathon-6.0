@@ -5,8 +5,8 @@
   "main": "dist/index.js",
   "scripts": {
     "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
-    "build": "npx prisma generate && npx esbuild src/index.ts --bundle --platform=node --outfile=dist/index.js --external:@prisma/client --external:prisma",
-    "start": "node dist/index.js",
+    "build": "npx prisma generate && npx esbuild src/index.ts --bundle --platform=node --outfile=dist/index.js --external:@prisma/client --external:prisma && npx esbuild prisma/seed.ts --bundle --platform=node --outfile=dist/seed.js --external:@prisma/client --external:prisma",
+    "start": "npx prisma db push --skip-generate && node dist/seed.js && node dist/index.js",
     "lint": "eslint src/**/*.ts",
     "test": "jest",
     "test:coverage": "jest --coverage",
