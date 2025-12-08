@@ -1,7 +1,9 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
 import { useAuthStore } from '../stores/authStore';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || '/api/v1';
+// Production API URL - hardcoded for Render deployment
+const PRODUCTION_API_URL = 'https://vayuv-autosentry-ey-techathon-6-0.onrender.com/api/v1';
+const API_BASE_URL = import.meta.env.VITE_API_URL || PRODUCTION_API_URL;
 
 // Create axios instance
 const api = axios.create({
