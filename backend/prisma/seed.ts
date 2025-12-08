@@ -281,10 +281,13 @@ async function main() {
 }
 
 main()
-  .catch((e) => {
-    console.error('❌ Error seeding database:', e);
-    process.exit(1);
-  })
-  .finally(async () => {
+  .then(async () => {
     await prisma.$disconnect();
+    console.log('✅ Seed completed, database disconnected');
+    process.exit(0);
+  })
+  .catch(async (e) => {
+    console.error('❌ Error seeding database:', e);
+    await prisma.$disconnect();
+    process.exit(1);
   });
