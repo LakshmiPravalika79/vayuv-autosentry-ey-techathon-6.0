@@ -75,6 +75,16 @@ function App() {
             <AdminDashboard />
           </ProtectedRoute>
         } />
+        <Route path="/admin/users" element={
+          <ProtectedRoute allowedRoles={['ADMIN', 'MANAGER']}>
+            <AdminDashboard />
+          </ProtectedRoute>
+        } />
+        <Route path="/admin/centers" element={
+          <ProtectedRoute allowedRoles={['ADMIN', 'MANAGER']}>
+            <AdminDashboard />
+          </ProtectedRoute>
+        } />
         <Route path="/vehicles" element={<Vehicles />} />
         <Route path="/vehicles/:id" element={<VehicleDetail />} />
         <Route path="/telemetry" element={<Telemetry />} />

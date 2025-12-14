@@ -11,8 +11,24 @@ const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
-  timeout: 30000,
+  timeout: 60000, // Increased for cold starts on Render
 });
+
+// Simple retry function for network issues
+const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+async function retryRequest(fn: () => Promise<any>, retries = 2, delay = 1000) {
+  for (let i = 0; i <= retries; i++) {
+    try {
+      return await fn();
+    } catch (error: any) {
+      if (i === retries || (error.response && error.response.status < 500)) {
+        throw error;
+      }
+      await sleep(delay * (i + 1));
+    }
+  }
+}
 
 // Request interceptor to add auth token
 api.interceptors.request.use(
@@ -77,7 +93,7 @@ export default api;
 // Auth API
 export const authAPI = {
   login: (email: string, password: string) =>
-    api.post('/auth/login', { email, password }),
+    retryRequest(() => api.post('/auth/login', { email, password })),
   
   register: (data: { email: string; password: string; firstName: string; lastName: string }) =>
     api.post('/auth/register', data),
