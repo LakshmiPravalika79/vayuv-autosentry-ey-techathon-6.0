@@ -85,7 +85,11 @@ body {
 
 /* Card styles */
 .card {
-  @apply bg-white dark:bg-slate-800 rounded-xl shadow-card p-6 transition-shadow hover:shadow-card-hover;
+  @apply bg-white dark:bg-slate-800 rounded-xl shadow-card p-6 transition-shadow hover:shadow-card-hover border border-gray-200 dark:border-slate-700;
+}
+
+.card-hover {
+  @apply hover:shadow-lg hover:border-gray-300 dark:hover:border-slate-600;
 }
 
 /* Button styles */
@@ -111,7 +115,12 @@ body {
 
 /* Input styles */
 .input {
-  @apply w-full px-4 py-2 rounded-lg border border-secondary-300 bg-white dark:bg-slate-800 dark:border-slate-600 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all;
+  @apply w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all;
+}
+
+/* Label styles */
+.label {
+  @apply block text-sm font-medium text-gray-700 dark:text-secondary-300 mb-2;
 }
 
 /* Status badges */
@@ -168,6 +177,15 @@ body {
 
 .sidebar-item.active {
   @apply bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 border-r-2 border-primary-600;
+}
+
+/* Sidebar link styles - used in MainLayout */
+.sidebar-link {
+  @apply flex items-center gap-3 px-4 py-3 rounded-lg text-gray-600 dark:text-secondary-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-secondary-700/50 transition-colors;
+}
+
+.sidebar-link-active {
+  @apply bg-primary-100 dark:bg-primary-600/20 text-primary-700 dark:text-primary-400 border-l-4 border-primary-600 dark:border-primary-500;
 }
 
 /* Gradient backgrounds */

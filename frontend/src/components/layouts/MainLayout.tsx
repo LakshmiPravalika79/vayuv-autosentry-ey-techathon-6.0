@@ -118,7 +118,7 @@ export default function MainLayout() {
   const isAdmin = user?.role === 'ADMIN' || user?.role === 'MANAGER';
 
   return (
-    <div className="min-h-screen bg-secondary-900">
+    <div className="min-h-screen bg-gray-100 dark:bg-secondary-900">
       {/* Mobile sidebar backdrop */}
       <AnimatePresence>
         {sidebarOpen && (
@@ -134,21 +134,21 @@ export default function MainLayout() {
 
       {/* Sidebar */}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 w-64 bg-secondary-800 border-r border-secondary-700 transform transition-transform duration-300 lg:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-50 w-64 bg-white dark:bg-slate-900 border-r border-gray-200 dark:border-slate-700 transform transition-transform duration-300 lg:translate-x-0 ${
           sidebarOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
         <div className="flex flex-col h-full">
           {/* Logo */}
-          <div className="flex items-center gap-2 px-6 py-5 border-b border-secondary-700">
+          <div className="flex items-center gap-2 px-6 py-5 border-b border-gray-200 dark:border-secondary-700">
             <div className="w-8 h-8 bg-gradient-to-br from-primary-500 to-primary-700 rounded-lg flex items-center justify-center">
               <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
               </svg>
             </div>
-            <span className="text-xl font-bold text-white">AutoSentry</span>
+            <span className="text-xl font-bold text-gray-900 dark:text-white">AutoSentry</span>
             <button
-              className="ml-auto lg:hidden text-secondary-400 hover:text-white"
+              className="ml-auto lg:hidden text-gray-500 dark:text-secondary-400 hover:text-gray-900 dark:hover:text-white"
               onClick={() => setSidebarOpen(false)}
             >
               <XMarkIcon className="w-6 h-6" />
@@ -157,8 +157,8 @@ export default function MainLayout() {
 
           {/* Role Badge */}
           {isAdmin && (
-            <div className="px-4 py-2 bg-primary-900/30 border-b border-secondary-700">
-              <span className="text-xs font-medium text-primary-400">
+            <div className="px-4 py-2 bg-primary-100 dark:bg-primary-900/30 border-b border-gray-200 dark:border-secondary-700">
+              <span className="text-xs font-medium text-primary-600 dark:text-primary-400">
                 {roleLabels[user?.role || 'CUSTOMER']} Mode
               </span>
             </div>
@@ -182,23 +182,23 @@ export default function MainLayout() {
           </nav>
 
           {/* User section */}
-          <div className="p-4 border-t border-secondary-700">
+          <div className="p-4 border-t border-gray-200 dark:border-secondary-700">
             <div className="flex items-center gap-3 px-3 py-2">
               <div className="w-10 h-10 rounded-full bg-primary-600 flex items-center justify-center text-white font-medium">
                 {user?.firstName?.[0]}{user?.lastName?.[0]}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-white truncate">
+                <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
                   {user?.firstName} {user?.lastName}
                 </p>
-                <p className="text-xs text-secondary-400 truncate">
+                <p className="text-xs text-gray-500 dark:text-secondary-400 truncate">
                   {roleLabels[user?.role || 'CUSTOMER']}
                 </p>
               </div>
             </div>
             <button
               onClick={handleLogout}
-              className="mt-2 w-full flex items-center gap-2 px-3 py-2 text-secondary-400 hover:text-white hover:bg-secondary-700 rounded-lg transition-colors"
+              className="mt-2 w-full flex items-center gap-2 px-3 py-2 text-gray-600 dark:text-secondary-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-secondary-700 rounded-lg transition-colors"
             >
               <ArrowRightOnRectangleIcon className="w-5 h-5" />
               <span>Sign out</span>
@@ -210,10 +210,10 @@ export default function MainLayout() {
       {/* Main content */}
       <div className="lg:pl-64">
         {/* Top bar */}
-        <header className="sticky top-0 z-30 bg-secondary-800/80 backdrop-blur-sm border-b border-secondary-700">
+        <header className="sticky top-0 z-30 bg-white/80 dark:bg-secondary-800/80 backdrop-blur-sm border-b border-gray-200 dark:border-secondary-700">
           <div className="flex items-center justify-between px-4 py-3">
             <button
-              className="lg:hidden text-secondary-400 hover:text-white"
+              className="lg:hidden text-gray-500 dark:text-secondary-400 hover:text-gray-900 dark:hover:text-white"
               onClick={() => setSidebarOpen(true)}
             >
               <Bars3Icon className="w-6 h-6" />
@@ -226,7 +226,7 @@ export default function MainLayout() {
               <div className="relative" ref={notificationRef}>
                 <button 
                   onClick={() => setNotificationOpen(!notificationOpen)}
-                  className="relative text-secondary-400 hover:text-white transition-colors"
+                  className="relative text-gray-500 dark:text-secondary-400 hover:text-gray-900 dark:hover:text-white transition-colors"
                 >
                   <BellIcon className="w-6 h-6" />
                   {unreadCount > 0 && (
@@ -244,15 +244,15 @@ export default function MainLayout() {
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: -10, scale: 0.95 }}
                       transition={{ duration: 0.15 }}
-                      className="absolute right-0 mt-2 w-80 bg-secondary-800 border border-secondary-700 rounded-xl shadow-xl overflow-hidden z-50"
+                      className="absolute right-0 mt-2 w-80 bg-white dark:bg-secondary-800 border border-gray-200 dark:border-secondary-700 rounded-xl shadow-xl overflow-hidden z-50"
                     >
                       {/* Header */}
-                      <div className="flex items-center justify-between px-4 py-3 border-b border-secondary-700">
-                        <h3 className="text-sm font-semibold text-white">Notifications</h3>
+                      <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-secondary-700">
+                        <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Notifications</h3>
                         {unreadCount > 0 && (
                           <button 
                             onClick={markAllAsRead}
-                            className="text-xs text-primary-400 hover:text-primary-300"
+                            className="text-xs text-primary-600 dark:text-primary-400 hover:text-primary-500 dark:hover:text-primary-300"
                           >
                             Mark all read
                           </button>
@@ -262,15 +262,15 @@ export default function MainLayout() {
                       {/* Notification List */}
                       <div className="max-h-80 overflow-y-auto">
                         {notifications.length === 0 ? (
-                          <div className="p-4 text-center text-secondary-400">
+                          <div className="p-4 text-center text-gray-500 dark:text-secondary-400">
                             No notifications
                           </div>
                         ) : (
                           notifications.map((notification) => (
                             <div
                               key={notification.id}
-                              className={`px-4 py-3 border-b border-secondary-700/50 hover:bg-secondary-700/30 transition-colors ${
-                                !notification.read ? 'bg-secondary-700/20' : ''
+                              className={`px-4 py-3 border-b border-gray-100 dark:border-secondary-700/50 hover:bg-gray-50 dark:hover:bg-secondary-700/30 transition-colors ${
+                                !notification.read ? 'bg-primary-50 dark:bg-secondary-700/20' : ''
                               }`}
                             >
                               <div className="flex items-start gap-3">
@@ -278,18 +278,18 @@ export default function MainLayout() {
                                   notification.type === 'danger' ? 'bg-danger-500' :
                                   notification.type === 'warning' ? 'bg-warning-500' :
                                   notification.type === 'success' ? 'bg-success-500' :
-                                  'bg-info-500'
+                                  'bg-primary-500'
                                 }`} />
                                 <div className="flex-1 min-w-0">
-                                  <p className="text-sm font-medium text-white">{notification.title}</p>
-                                  <p className="text-xs text-secondary-400 mt-0.5 line-clamp-2">{notification.message}</p>
-                                  <p className="text-xs text-secondary-500 mt-1">{notification.time}</p>
+                                  <p className="text-sm font-medium text-gray-900 dark:text-white">{notification.title}</p>
+                                  <p className="text-xs text-gray-500 dark:text-secondary-400 mt-0.5 line-clamp-2">{notification.message}</p>
+                                  <p className="text-xs text-gray-400 dark:text-secondary-500 mt-1">{notification.time}</p>
                                 </div>
                                 <div className="flex items-center gap-1">
                                   {!notification.read && (
                                     <button 
                                       onClick={() => markAsRead(notification.id)}
-                                      className="p-1 text-secondary-400 hover:text-success-400"
+                                      className="p-1 text-gray-400 dark:text-secondary-400 hover:text-success-500 dark:hover:text-success-400"
                                       title="Mark as read"
                                     >
                                       <CheckIcon className="w-4 h-4" />
@@ -297,7 +297,7 @@ export default function MainLayout() {
                                   )}
                                   <button 
                                     onClick={() => clearNotification(notification.id)}
-                                    className="p-1 text-secondary-400 hover:text-danger-400"
+                                    className="p-1 text-gray-400 dark:text-secondary-400 hover:text-danger-500 dark:hover:text-danger-400"
                                     title="Dismiss"
                                   >
                                     <XMarkIcon className="w-4 h-4" />

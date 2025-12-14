@@ -13,6 +13,7 @@ import {
 } from '@heroicons/react/24/outline';
 import toast from 'react-hot-toast';
 import { useAuthStore } from '../stores/authStore';
+import { useThemeStore } from '../stores/themeStore';
 
 export default function Settings() {
   const { user } = useAuthStore();
@@ -415,7 +416,7 @@ function SecuritySettings() {
 }
 
 function AppearanceSettings() {
-  const [theme, setTheme] = useState('dark');
+  const { theme, setTheme } = useThemeStore();
   const [accentColor, setAccentColor] = useState('blue');
   const [fontSize, setFontSize] = useState('medium');
   const [compactMode, setCompactMode] = useState(false);
@@ -429,7 +430,7 @@ function AppearanceSettings() {
     { id: 'pink', color: '#ec4899', name: 'Pink' },
   ];
 
-  const handleThemeChange = (t: string) => {
+  const handleThemeChange = (t: 'light' | 'dark' | 'system') => {
     setTheme(t);
     toast.success(`Theme changed to ${t}`);
   };
@@ -447,38 +448,35 @@ function AppearanceSettings() {
   return (
     <div className="space-y-6">
       <div className="card p-6">
-        <h2 className="text-lg font-semibold text-white mb-6">Appearance Settings</h2>
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-6">Appearance Settings</h2>
         
         <div className="space-y-8">
           <div>
-            <h3 className="text-sm font-medium text-secondary-400 uppercase tracking-wider mb-4">
+            <h3 className="text-sm font-medium text-gray-500 dark:text-secondary-400 uppercase tracking-wider mb-4">
               Theme
             </h3>
             <div className="grid grid-cols-3 gap-4">
-              {['light', 'dark', 'system'].map((t) => (
+              {(['light', 'dark', 'system'] as const).map((t) => (
                 <button
                   key={t}
                   onClick={() => handleThemeChange(t)}
                   className={`p-4 rounded-lg border-2 transition-colors ${
                     theme === t
                       ? 'border-primary-500 bg-primary-500/10'
-                      : 'border-secondary-700 hover:border-secondary-600'
+                      : 'border-gray-300 dark:border-secondary-700 hover:border-gray-400 dark:hover:border-secondary-600'
                   }`}
                 >
                   <div className={`w-full h-16 rounded mb-2 ${
-                    t === 'light' ? 'bg-white' : t === 'dark' ? 'bg-secondary-900' : 'bg-gradient-to-r from-white to-secondary-900'
+                    t === 'light' ? 'bg-gray-100 border border-gray-300' : t === 'dark' ? 'bg-secondary-900' : 'bg-gradient-to-r from-gray-100 to-secondary-900'
                   }`} />
-                  <p className="text-white capitalize">{t}</p>
+                  <p className="text-gray-900 dark:text-white capitalize">{t}</p>
                 </button>
               ))}
             </div>
-            <p className="mt-2 text-xs text-secondary-500">
-              Note: Light theme coming soon. Currently using dark theme.
-            </p>
           </div>
 
           <div>
-            <h3 className="text-sm font-medium text-secondary-400 uppercase tracking-wider mb-4">
+            <h3 className="text-sm font-medium text-gray-500 dark:text-secondary-400 uppercase tracking-wider mb-4">
               Accent Color
             </h3>
             <div className="flex gap-3">
