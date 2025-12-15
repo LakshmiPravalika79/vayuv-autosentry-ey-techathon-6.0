@@ -1,11 +1,11 @@
-# AutoSentry AI — Autonomous Predictive Vehicle Maintenance System
+# VAYUV — Vehicle Agentic Yield & Uptime Vision (Autonomous Predictive Vehicle Maintenance System)
 
 **Team:** EverLearners  
 **Project:** EY Techathon 6.0 - Problem Statement #3 (Automotive)
 
 ## 🚗 Overview
 
-AutoSentry AI is a production-grade, autonomous predictive vehicle maintenance system that leverages agentic AI to monitor vehicle health, predict failures, schedule maintenance, and generate manufacturing quality insights.
+Vayuv AutoSentry AI is a production-grade, autonomous predictive vehicle maintenance system that leverages agentic AI to monitor vehicle health, predict failures, schedule maintenance, and generate manufacturing quality insights.
 
 ## 🏗️ Architecture
 
