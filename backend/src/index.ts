@@ -113,7 +113,8 @@ app.use(helmet({
 const corsOrigins = process.env.CORS_ORIGIN?.split(',') || [
   'http://localhost:5173', 
   'http://localhost:3000',
-  'https://vayuv-autosentry-ey-techathon-6-0-1.onrender.com'
+  'https://vayuv-autosentry-ey-techathon-6-0-1.onrender.com',
+  'https://vayuv.onrender.com'
 ];
 app.use(cors({
   origin: corsOrigins,
