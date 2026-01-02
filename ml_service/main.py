@@ -30,11 +30,14 @@ app = FastAPI(
     docs_url="/docs",
     redoc_url="/redoc"
 )
+# Get origins from environment variable or default to localhost
+allowed_origins_env = os.getenv("ALLOWED_ORIGINS", "http://localhost:5173")
+origins = allowed_origins_env.split(",")
 
 # CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
