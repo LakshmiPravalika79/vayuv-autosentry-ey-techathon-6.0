@@ -36,7 +36,7 @@ export default function AuthLayout() {
 
         {/* Footer */}
         <p className="text-center text-secondary-500 text-sm mt-6">
-          &copy; 2024 AutoSentry AI. EY Techathon 6.0 Submission.
+          Hackathon Submission
         </p>
       </motion.div>
     </div>
